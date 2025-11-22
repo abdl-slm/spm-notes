@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.menu.MenuFragment">
+
+    <ImageButton
+        android:id="@+id/btnPastYear"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"/>
+
+    <ImageButton
+        android:id="@+id/btnTips"
+        android:layout_below="@+id/btnPastYear"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"/>
+
+    <ImageButton
+        android:id="@+id/btnTools"
+        android:layout_below="@+id/btnTips"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"/>
+
+    <ImageButton
+        android:id="@+id/btnInfo"
+        android:layout_below="@+id/btnTools"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"/>
+    
+
+</RelativeLayout>
