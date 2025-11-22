@@ -6,7 +6,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.daimajia.androidanimations.library.Techniques
 import com.daimajia.androidanimations.library.YoYo
-import com.salam94.ptcgdex.util.inflate
+import com.salam94.spmnotes.util.inflate
 import com.salam94.spmnotes.R
 import com.salam94.spmnotes.model.Notes
 import com.salam94.spmnotes.ui.pastyear.PastYearNavigator

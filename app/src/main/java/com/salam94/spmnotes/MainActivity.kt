@@ -1,94 +1,126 @@
 package com.salam94.spmnotes
 
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import com.aurelhubert.ahbottomnavigation.AHBottomNavigation
-import com.aurelhubert.ahbottomnavigation.AHBottomNavigationItem
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import com.google.android.gms.ads.MobileAds
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.salam94.spmnotes.ui.bookmark.BookMarkFragment
 import com.salam94.spmnotes.ui.main.MainFragment
-import com.salam94.spmnotes.ui.pastyear.PastYearFragment
 import com.salam94.spmnotes.ui.settings.SettingsFragment
 
 class MainActivity : AppCompatActivity() {
 
+    private lateinit var mainFragment: MainFragment
+    private lateinit var bookmarkFragment: BookMarkFragment
+    private lateinit var settingsFragment: SettingsFragment
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // 1. Enable Edge-to-Edge
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        // --- ADD THIS BLOCK ---
+        // Set Status Bar Color to Blue
+        window.statusBarColor = androidx.core.content.ContextCompat.getColor(this, R.color.colorPrimary) // Or R.color.blue
+
+        // Make Status Bar Icons White (False = Light icons on Dark background)
+        WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = false
+        // ----------------------
+
         setContentView(R.layout.main_activity)
         MobileAds.initialize(this) {}
-        val fragmentManager = supportFragmentManager.beginTransaction()
-        val infoFragment = BookMarkFragment.newInstance()
-        val mainFragment = MainFragment.newInstance()
-        val settingsFragment = SettingsFragment.newInstance()
+
+        // 2. Setup Safe Area Handling
+        setupSafeArea()
+
+        // Initialize Fragments
+        // Check if fragments already exist (rotation) to avoid overlapping
         if (savedInstanceState == null) {
+            mainFragment = MainFragment.newInstance()
+            bookmarkFragment = BookMarkFragment.newInstance()
+            settingsFragment = SettingsFragment.newInstance()
+
+            val fragmentManager = supportFragmentManager.beginTransaction()
             fragmentManager.add(R.id.container, mainFragment, "main")
-            fragmentManager.add(R.id.container, infoFragment, "settings")
+            fragmentManager.add(R.id.container, bookmarkFragment, "bookmark") // Fixed tag
             fragmentManager.add(R.id.container, settingsFragment, "settings")
-            fragmentManager.hide(infoFragment)
+
+            fragmentManager.hide(bookmarkFragment)
             fragmentManager.hide(settingsFragment)
             fragmentManager.commit()
+        } else {
+            // Restore references to avoid creating new instances on rotation
+            mainFragment = supportFragmentManager.findFragmentByTag("main") as MainFragment
+            bookmarkFragment =
+                supportFragmentManager.findFragmentByTag("bookmark") as BookMarkFragment
+            settingsFragment =
+                supportFragmentManager.findFragmentByTag("settings") as SettingsFragment
         }
-        setupBottomBar(mainFragment, infoFragment, settingsFragment)
+
+        setupBottomBar()
     }
 
-    private fun setupBottomBar(mainFragment: MainFragment, pastYearFragment: BookMarkFragment, settingsFragment: SettingsFragment){
+    private fun setupSafeArea() {
+        val container = findViewById<View>(R.id.container)
+        val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation)
 
-        val bottomNavigation = findViewById<AHBottomNavigation>(R.id.bottom_navigation)
-
-        val pastYear =
-            AHBottomNavigationItem(
-                "Past Year",
-                R.drawable.ic_description_white_24dp,
-                android.R.color.white
+        // Apply insets to the root view or specific views
+        ViewCompat.setOnApplyWindowInsetsListener(window.decorView.rootView) { _, insets ->
+            val bars = insets.getInsets(
+                WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
             )
-        val bookmark =
-            AHBottomNavigationItem(
-                "Bookmark",
-                R.drawable.ic_description_white_24dp,
-                android.R.color.white
+
+            // Apply top padding (Status Bar) to the content container
+            container.updatePadding(
+                top = bars.top
             )
-        val settings = AHBottomNavigationItem(
-            "Settings",
-            R.drawable.ic_settings_white_24dp,
-            android.R.color.white
-        )
 
-        bottomNavigation.addItem(pastYear)
-        bottomNavigation.addItem(bookmark)
-        bottomNavigation.addItem(settings)
+            // Apply bottom padding (Navigation Bar) to the BottomNav
+            // We add the original padding if needed, but usually just setting it is enough
+            bottomNav.updatePadding(
+                bottom = bars.bottom
+            )
 
-        bottomNavigation.defaultBackgroundColor = resources.getColor(R.color.colorAccent)
+            insets
+        }
+    }
 
-        bottomNavigation.accentColor = resources.getColor(android.R.color.white)
-        bottomNavigation.inactiveColor = resources.getColor(android.R.color.darker_gray)
+    private fun setupBottomBar() {
+        val bottomNavigation = findViewById<BottomNavigationView>(R.id.bottom_navigation)
 
-        bottomNavigation.setOnTabSelectedListener { position, _ ->
+        // Setup Colors (Optional - usually done in styles.xml/themes.xml now)
+        // But if you need to force it programmatically like before:
+        // bottomNavigation.setBackgroundColor(resources.getColor(R.color.colorAccent))
+        // bottomNavigation.itemIconTintList = ... (requires ColorStateList)
 
+        bottomNavigation.setOnItemSelectedListener { item ->
             val ft = supportFragmentManager.beginTransaction()
 
-            when (position) {
-                0 -> {
+            when (item.itemId) {
+                R.id.nav_past_year -> {
                     ft.show(mainFragment)
-                    ft.hide(pastYearFragment)
+                    ft.hide(bookmarkFragment)
                     ft.hide(settingsFragment)
-                    ft.commit()
                 }
-                1 -> {
-                    ft.hide(settingsFragment)
-                    ft.show(pastYearFragment)
+
+                R.id.nav_bookmark -> {
                     ft.hide(mainFragment)
-                    ft.commit()
+                    ft.show(bookmarkFragment)
+                    ft.hide(settingsFragment)
                 }
-                2 -> {
+
+                R.id.nav_settings -> {
+                    ft.hide(mainFragment)
+                    ft.hide(bookmarkFragment)
                     ft.show(settingsFragment)
-                    ft.hide(pastYearFragment)
-                    ft.hide(mainFragment)
-                    ft.commit()
                 }
             }
-
+            ft.commit()
             true
         }
-
     }
 }

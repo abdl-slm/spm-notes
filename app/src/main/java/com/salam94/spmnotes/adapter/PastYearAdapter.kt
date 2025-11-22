@@ -1,6 +1,5 @@
 package com.salam94.spmnotes.adapter
 
-import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -9,12 +8,11 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.daimajia.androidanimations.library.Techniques
 import com.daimajia.androidanimations.library.YoYo
-import com.salam94.ptcgdex.util.inflate
+import com.salam94.spmnotes.util.inflate
 import com.salam94.spmnotes.R
 import com.salam94.spmnotes.model.PastYear
 import com.salam94.spmnotes.ui.main.MainNavigator
 import com.salam94.spmnotes.util.ImageHandler
-import org.w3c.dom.Text
 
 
 class PastYearAdapter(private val pastYear: List<PastYear>,private val mainNavigator: MainNavigator) :

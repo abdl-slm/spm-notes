@@ -1,4 +1,4 @@
-package com.salam94.ptcgdex.util
+package com.salam94.spmnotes.util
 
 import android.view.LayoutInflater
 import android.view.View

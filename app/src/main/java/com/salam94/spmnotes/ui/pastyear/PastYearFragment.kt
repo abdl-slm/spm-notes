@@ -14,6 +14,7 @@ import com.github.barteksc.pdfviewer.listener.OnLoadCompleteListener
 import com.google.android.gms.ads.AdRequest
 import com.salam94.spmnotes.databinding.PastYearFragmentBinding
 import com.salam94.spmnotes.model.PastYear
+import com.salam94.spmnotes.util.Stash
 import java.io.BufferedInputStream
 import java.io.IOException
 import java.io.InputStream
@@ -57,14 +58,18 @@ class PastYearFragment : Fragment(), PastYearNavigator, OnLoadCompleteListener {
         }
 
         binding.btnBookmark.setOnClickListener {
-            //Handle bookmarking here
+            // 1. Get existing list (Stash returns an empty ArrayList if none exists)
+            // We pass PastYear::class.java so Gson knows what type of objects are inside
+            val bookmarks = Stash.getArrayList<PastYear>("past_year", PastYear::class.java)
 
-            context?.let {
-//                val listOfBookmarkedPastYear = SharedPreferencesManager(it).getList()
-//                listOfBookmarkedPastYear.toMutableList().add(PastYear("test", "test"))
-//                SharedPreferencesManager(it).setList("past_year", listOfBookmarkedPastYear)
-//                Log.d("salamk", SharedPreferencesManager(it).getList().toString())
-            }
+            // 2. Add the new item
+            bookmarks.add(PastYear("test", "test"))
+
+            // 3. Save the updated list back to Stash
+            Stash.put("past_year", bookmarks)
+
+            // Log to verify
+            Log.d("salamk", Stash.getArrayList<PastYear>("past_year", PastYear::class.java).toString())
         }
     }
 

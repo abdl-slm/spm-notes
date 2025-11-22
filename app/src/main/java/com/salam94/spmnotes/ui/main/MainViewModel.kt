@@ -1,65 +1,79 @@
 package com.salam94.spmnotes.ui.main
 
 import android.content.Context
-import android.util.Log
-import android.view.View.GONE
+import android.view.View
 import android.widget.ProgressBar
-import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.salam94.spmnotes.adapter.PastYearAdapter
 import com.salam94.spmnotes.model.PastYear
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.uiThread
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
-import java.lang.Exception
 
 class MainViewModel : ViewModel() {
 
-    fun getPastYearList(context: Context, recyclerPaper: RecyclerView, url: String, mainNavigator: MainNavigator, progressBar: ProgressBar) {
-        doAsync {
+    fun getPastYearList(
+        context: Context,
+        recyclerPaper: RecyclerView,
+        url: String,
+        mainNavigator: MainNavigator,
+        progressBar: ProgressBar
+    ) {
+        // Launch a coroutine on the Main thread to start
+        // Note: If this is inside an Activity/Fragment, use 'lifecycleScope.launch' instead of creating a new CoroutineScope
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                // Switch to IO thread for network and parsing operations
+                val pastYearList = withContext(Dispatchers.IO) {
+                    val pastYear: ArrayList<PastYear> = ArrayList()
 
-            val pastYear: ArrayList<PastYear> = ArrayList()
-            val doc =
-                Jsoup.connect(url)
-                    .get()
-            val tableElements =
-                doc.getElementsByClass("table table-striped table-bordered table-hover")
+                    // Connect and Get Document
+                    val doc = Jsoup.connect(url).get()
 
-            for (tableElement in tableElements) {
+                    val tableElements = doc.getElementsByClass("table table-striped table-bordered table-hover")
 
-                try {
+                    for (tableElement in tableElements) {
+                        // Use standard loop or safety checks
+                        val tbodies = tableElement.getElementsByTag("tbody")
+                        if (tbodies.isEmpty()) continue
 
-                    val tableBody = tableElement.getElementsByTag("tbody")[0]
-                    val tableRows = tableBody.getElementsByTag("tr")
+                        val tableBody = tbodies[0]
+                        val tableRows = tableBody.getElementsByTag("tr")
 
-                    for (tableRow in tableRows) {
+                        for (tableRow in tableRows) {
+                            val tableDataSet = tableRow.getElementsByTag("td")
 
-                        val tableDataSet = tableRow.getElementsByTag("td")
+                            for (tableData in tableDataSet) {
+                                val links = tableData.getElementsByTag("a")
+                                if (links.isNotEmpty()) {
+                                    val paperTitleLink = links[0]
+                                    val paperLink = paperTitleLink.absUrl("href")
 
-                        for (tableData in tableDataSet) {
-                            val paperTitleLink = tableData.getElementsByTag("a")[0]
-                            val paperLink = paperTitleLink.absUrl("href")
-
-                            //Too long is most probably ads
-                            pastYear.add(PastYear(tableData.text(), paperLink))
+                                    // Add to list
+                                    pastYear.add(PastYear(tableData.text(), paperLink))
+                                }
+                            }
                         }
                     }
-
-                    uiThread {
-                        progressBar.visibility = GONE
-                        val pastYearAdapter = PastYearAdapter(pastYear, mainNavigator)
-                        val linearLayoutManager = LinearLayoutManager(context)
-                        recyclerPaper.layoutManager = linearLayoutManager
-                        recyclerPaper.adapter = pastYearAdapter
-                    }
-                }catch (e:Exception){
-                    uiThread {
-                        progressBar.visibility = GONE
-                    }
+                    // Return the populated list to the Main thread
+                    return@withContext pastYear
                 }
 
+                // We are back on the Main Thread here
+                progressBar.visibility = View.GONE
+
+                val pastYearAdapter = PastYearAdapter(pastYearList, mainNavigator)
+                recyclerPaper.layoutManager = LinearLayoutManager(context)
+                recyclerPaper.adapter = pastYearAdapter
+
+            } catch (e: Exception) {
+                // Handle errors on Main Thread
+                e.printStackTrace()
+                progressBar.visibility = View.GONE
             }
         }
     }

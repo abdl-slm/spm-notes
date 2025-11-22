@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_past_year"
+        android:icon="@drawable/ic_description_white_24dp"
+        android:title="Past Year" />
+
+    <item
+        android:id="@+id/nav_bookmark"
+        android:icon="@drawable/ic_description_white_24dp"
+        android:title="Bookmark" />
+
+    <item
+        android:id="@+id/nav_settings"
+        android:icon="@drawable/ic_settings_white_24dp"
+        android:title="Settings" />
+</menu>

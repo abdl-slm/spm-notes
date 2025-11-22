@@ -70,8 +70,8 @@ class BookMarkFragment : Fragment(), MainNavigator, BookMarkNavigator, OnLoadCom
         }
 
         binding.btnClose.setOnClickListener {
-            binding.webViewPast.visibility = View.GONE
-            binding.topBarWebView.visibility = View.GONE
+            binding.webViewPast.visibility = GONE
+            binding.topBarWebView.visibility = GONE
         }
 
 
