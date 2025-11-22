@@ -87,21 +87,22 @@ open class MyApplication : Application(), Application.ActivityLifecycleCallbacks
             isLoadingAd = true
             val request = AdRequest.Builder().build()
             AppOpenAd.load(
-                context, AD_UNIT_ID, request,
-                AppOpenAd.APP_OPEN_AD_ORIENTATION_PORTRAIT,
+                context,
+                AD_UNIT_ID,
+                request,
+                // Orientation parameter removed here
                 object : AppOpenAd.AppOpenAdLoadCallback() {
 
                     override fun onAdLoaded(ad: AppOpenAd) {
-                        // Called when an app open ad has loaded.
                         appOpenAd = ad
                         isLoadingAd = false
                     }
 
                     override fun onAdFailedToLoad(loadAdError: LoadAdError) {
-                        // Called when an app open ad has failed to load.
-                        isLoadingAd = false;
+                        isLoadingAd = false
                     }
-                })
+                }
+            )
         }
 
         fun showAdIfAvailable(activity: Activity) {
