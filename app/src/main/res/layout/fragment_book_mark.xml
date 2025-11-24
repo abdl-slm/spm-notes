@@ -130,4 +130,17 @@
     <!--        android:layout_centerInParent="true">-->
 
     <!--    </ProgressBar>-->
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="64dp"
+        android:gravity="center"
+        android:layout_centerHorizontal="true"
+        android:text="@string/pull_to_refresh_bookmarked_papers"
+        android:layout_alignParentBottom="true"
+        android:textAllCaps="true"
+        android:textColor="@android:color/white"
+        android:textSize="12sp">
+
+    </TextView>
 </RelativeLayout>

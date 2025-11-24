@@ -1,12 +1,12 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+// Top-level build file
 buildscript {
-    ext.kotlin_version = '2.2.0'
+    ext.kotlin_version = '2.2.0' // Matches your stdlib version
     repositories {
         google()
-        jcenter()
+        mavenCentral() // <--- CHANGED: jcenter() is dead/deprecated. Use this.
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.9.1'
+        classpath 'com.android.tools.build:gradle:8.9.1' // Note: Check your Studio version, 8.9.1 might be too new/beta?
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
         // NOTE: Do not place your application dependencies here; they belong
@@ -14,10 +14,18 @@ buildscript {
     }
 }
 
+// --- ADD THIS BLOCK ---
+// This tells Gradle where to find the new Compose plugin and what version to use.
+plugins {
+    // The version here MUST match your 'ext.kotlin_version' (2.2.0)
+    id 'org.jetbrains.kotlin.plugin.compose' version '2.2.0' apply false
+}
+// ---------------------
+
 allprojects {
     repositories {
         google()
-        jcenter()
+        mavenCentral() // <--- CHANGED: Use MavenCentral
     }
 }
 

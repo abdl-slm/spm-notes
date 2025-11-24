@@ -7,8 +7,13 @@
 
     <item
         android:id="@+id/nav_bookmark"
-        android:icon="@drawable/ic_description_white_24dp"
+        android:icon="@drawable/bookmark_24px"
         android:title="Bookmark" />
+
+    <item
+        android:id="@+id/nav_pomodoro"
+        android:icon="@drawable/hourglass_24px"
+        android:title="Focus" />
 
     <item
         android:id="@+id/nav_settings"

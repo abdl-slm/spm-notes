@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">SPM Notes</string>
     <string name="banner_id">ca-app-pub-5511842174309593/3217742399</string>
+    <string name="pull_to_refresh_bookmarked_papers">Pull to refresh bookmarked papers</string>
 </resources>
