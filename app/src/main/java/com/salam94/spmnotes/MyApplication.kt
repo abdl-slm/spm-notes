@@ -19,7 +19,7 @@ open class MyApplication : Application(), Application.ActivityLifecycleCallbacks
 
     private lateinit var appOpenAdManager: AppOpenAdManager
     private var currentActivity: Activity? = null
-    private val AD_UNIT_ID = "ca-app-pub-5511842174309593/9077106485"
+    private val AD_UNIT_ID = "ca-app-pub-5511842174309593/2684409635"
 
     /** Keep track of the time an app open ad is loaded to ensure you don't show an expired ad. */
     private var loadTime: Long = 0
