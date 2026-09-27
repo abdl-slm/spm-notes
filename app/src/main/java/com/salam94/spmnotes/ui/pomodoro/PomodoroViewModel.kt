@@ -6,63 +6,84 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-// Define the states
 enum class TimerStatus { IDLE, RUNNING, PAUSED, COMPLETED }
+
+data class PomodoroUiState(
+    val totalDurationMs: Long = 25 * 60 * 1000L,
+    val timeLeftMs: Long = 25 * 60 * 1000L,
+    val status: TimerStatus = TimerStatus.IDLE
+) {
+    val progress: Float
+        get() = if (totalDurationMs > 0) timeLeftMs.toFloat() / totalDurationMs.toFloat() else 0f
+}
 
 class PomodoroViewModel : ViewModel() {
 
-    // 1. State - Single source of truth
-    private val _timeLeft = MutableStateFlow(25 * 60 * 1000L) // Default 25min in ms
-    val timeLeft = _timeLeft.asStateFlow()
+    private val _uiState = MutableStateFlow(PomodoroUiState())
+    val uiState: StateFlow<PomodoroUiState> = _uiState.asStateFlow()
 
-    private val _status = MutableStateFlow(TimerStatus.IDLE)
-    val status = _status.asStateFlow()
-
-    // 2. Internals for precision
     private var timerJob: Job? = null
     private var endTime = 0L
 
-    // 3. Actions
-    fun startTimer(durationMinutes: Int = 25) {
-        if (_status.value == TimerStatus.RUNNING) return
+    fun startOrResumeTimer(durationMinutes: Int = 25) {
+        if (_uiState.value.status == TimerStatus.RUNNING) return
 
-        val durationMs = durationMinutes * 60 * 1000L
+        val currentRemaining = if (_uiState.value.status == TimerStatus.PAUSED) {
+            _uiState.value.timeLeftMs
+        } else {
+            val totalMs = durationMinutes * 60 * 1000L
+            _uiState.update { it.copy(totalDurationMs = totalMs, timeLeftMs = totalMs) }
+            totalMs
+        }
 
-        // CORE LOGIC: We calculate the exact time the timer SHOULD end.
-        // This makes it robust even if the main thread hangs or lags.
-        endTime = SystemClock.elapsedRealtime() + durationMs
+        endTime = SystemClock.elapsedRealtime() + currentRemaining
+        _uiState.update { it.copy(status = TimerStatus.RUNNING) }
 
-        _status.value = TimerStatus.RUNNING
         startTicking()
+    }
+
+    fun pauseTimer() {
+        if (_uiState.value.status != TimerStatus.RUNNING) return
+        timerJob?.cancel()
+        _uiState.update { it.copy(status = TimerStatus.PAUSED) }
+    }
+
+    fun stopTimer(isPenalty: Boolean = false) {
+        timerJob?.cancel()
+        val defaultDuration = 25 * 60 * 1000L
+        _uiState.update {
+            it.copy(
+                status = TimerStatus.IDLE,
+                totalDurationMs = defaultDuration,
+                timeLeftMs = defaultDuration
+            )
+        }
     }
 
     private fun startTicking() {
         timerJob?.cancel()
         timerJob = viewModelScope.launch {
-            while (_status.value == TimerStatus.RUNNING) {
-                val currentTime = SystemClock.elapsedRealtime()
-                val remaining = endTime - currentTime
+            while (_uiState.value.status == TimerStatus.RUNNING) {
+                val remaining = endTime - SystemClock.elapsedRealtime()
 
                 if (remaining <= 0) {
-                    _timeLeft.value = 0
-                    _status.value = TimerStatus.COMPLETED
-                    // trigger notification here
+                    _uiState.update {
+                        it.copy(
+                            timeLeftMs = 0L,
+                            status = TimerStatus.COMPLETED
+                        )
+                    }
                     break
                 } else {
-                    _timeLeft.value = remaining
-                    // Update UI every second, but the math relies on system clock
-                    delay(1000)
+                    _uiState.update { it.copy(timeLeftMs = remaining) }
+                    delay(500) // Lower tick delay for smoother UI responsiveness
                 }
             }
         }
-    }
-
-    fun stopTimer() {
-        _status.value = TimerStatus.IDLE
-        timerJob?.cancel()
-        _timeLeft.value = 25 * 60 * 1000L // Reset
     }
 }

@@ -34,7 +34,8 @@ class MainViewModel : ViewModel() {
                     // Connect and Get Document
                     val doc = Jsoup.connect(url).get()
 
-                    val tableElements = doc.getElementsByClass("table table-striped table-bordered table-hover")
+                    val tableElements =
+                        doc.getElementsByClass("table table-striped table-bordered table-hover")
 
                     for (tableElement in tableElements) {
                         // Use standard loop or safety checks
@@ -54,7 +55,9 @@ class MainViewModel : ViewModel() {
                                     val paperLink = paperTitleLink.absUrl("href")
 
                                     // Add to list
-                                    pastYear.add(PastYear(tableData.text(), paperLink))
+                                    if (!tableData.text().contains("Apply with")) {
+                                        pastYear.add(PastYear(tableData.text(), paperLink))
+                                    }
                                 }
                             }
                         }
